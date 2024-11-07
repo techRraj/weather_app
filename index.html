@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+</head>
+<body class="bg-gray-100">
+  <header class="bg-blue-500 text-white py-4 px-6">
+    <h1 class="text-2xl font-bold">Weather Dashboard</h1>
+  </header>
+
+  <div class="container mx-auto my-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="col-span-1 bg-white shadow-md rounded-lg p-6">
+      <h2 class="text-xl font-bold mb-4">Search for a City</h2>
+      <div class="mb-4">
+        <input type="text" id="city-input" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter a city name" />
+        <button id="search-btn" class="bg-blue-500 text-white px-4 py-2 rounded-md mt-2 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+          <i class="fas fa-search mr-2"></i>
+          Search
+        </button>
+      </div>
+      <div id="search-history" class="space-y-2"></div>
+    </div>
+
+    <div class="col-span-2">
+      <div id="current-weather" class="bg-white shadow-md rounded-lg p-6 mb-4">
+        <h2 class="text-xl font-bold mb-4">Current Weather</h2>
+        <div id="current-weather-info" class="flex items-center space-x-4">
+          <div id="city-name" class="text-2xl font-bold"></div>
+          <div id="current-date" class="text-gray-500"></div>
+          <div id="current-icon" class="w-12 h-12"></div>
+          <div id="current-temp" class="text-4xl font-bold"></div>
+          <div id="current-description" class="text-gray-500"></div>
+          <div id="current-humidity" class="text-gray-500"></div>
+          <div id="current-wind" class="text-gray-500"></div>
+        </div>
+      </div>
+
+      <div id="forecast" class="bg-white shadow-md rounded-lg p-6">
+        <h2 class="text-xl font-bold mb-4">5-Day Forecast</h2>
+        <div id="forecast-info" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    const apiKey = 'b597ac1da99d1910617260c1bb9a57b6';
+    // The rest of the JavaScript code remains the same
+  </script>
+</body>
+</html>
