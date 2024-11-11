@@ -1,121 +1,143 @@
+
 const apiKey = 'b597ac1da99d1910617260c1bb9a57b6';
 const cityInput = document.getElementById('city-input');
 const searchBtn = document.getElementById('search-btn');
 const searchHistory = document.getElementById('search-history');
-const currentWeatherInfo = document.getElementById('current-weather-info');
-const forecastInfo = document.getElementById('forecast-info');
 
 // Function to fetch weather data
 async function getWeatherData(city) {
-  try {
-    const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
-    const data = await response.json();
-
-    if (response.ok) {
-      return data;
-    } else {
-      throw new Error(`Error fetching weather data: ${data.message}`);
+    try {
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            return data;
+        } else {
+            throw new Error(data.message);
+        }
+    } catch (error) {
+        throw new Error(`Failed to fetch weather data: ${error.message}`);
     }
-  } catch (error) {
-    console.error(error);
-    alert('Error fetching weather data. Please try again later.');
-  }
 }
 
 // Function to display current weather
 function displayCurrentWeather(data) {
-  const cityName = document.getElementById('city-name');
-  const currentDate = document.getElementById('current-date');
-  const currentIcon = document.getElementById('current-icon');
-  const currentTemp = document.getElementById('current-temp');
-  const currentDescription = document.getElementById('current-description');
-  const currentHumidity = document.getElementById('current-humidity');
-  const currentWind = document.getElementById('current-wind');
-
-  cityName.textContent = data.name;
-  currentDate.textContent = new Date().toLocaleDateString();
-  currentIcon.innerHTML = `<img src="http://openweathermap.org/img/w/${data.weather[0].icon}.png" alt="${data.weather[0].description}">`;
-  currentTemp.textContent = `${data.main.temp}°C`;
-  currentDescription.textContent = data.weather[0].description;
-  currentHumidity.textContent = `Humidity: ${data.main.humidity}%`;
-  currentWind.textContent = `Wind: ${data.wind.speed} m/s`;
+    document.getElementById('city-name').textContent = data.name;
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString();
+    document.getElementById('current-icon').innerHTML = `
+        <img src="http://openweathermap.org/img/w/${data.weather[0].icon}.png" 
+             alt="${data.weather[0].description}"
+             class="w-16 h-16">
+    `;
+    document.getElementById('current-temp').textContent = `${Math.round(data.main.temp)}°C`;
+    document.getElementById('current-description').textContent = 
+        data.weather[0].description.charAt(0).toUpperCase() + 
+        data.weather[0].description.slice(1);
+    document.getElementById('current-humidity').innerHTML = `
+        <i class="fas fa-tint text-blue-500"></i>
+        <span class="ml-2">Humidity: ${data.main.humidity}%</span>
+    `;
+    document.getElementById('current-wind').innerHTML = `
+        <i class="fas fa-wind text-blue-500"></i>
+        <span class="ml-2">Wind: ${Math.round(data.wind.speed)} m/s</span>
+    `;
 }
 
-// Function to display 5-day forecast
+// Function to display forecast
 async function displayForecast(city) {
-  try {
-    const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`);
-    const data = await response.json();
+    try {
+        const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}&units=metric`);
+        const data = await response.json();
 
-    if (response.ok) {
-      forecastInfo.innerHTML = '';
+        if (response.ok) {
+            const forecastInfo = document.getElementById('forecast-info');
+            forecastInfo.innerHTML = '';
 
-      for (let i = 0; i < 5; i++) {
-        const forecastItem = document.createElement('div');
-        forecastItem.classList.add('bg-white', 'shadow-md', 'rounded-lg', 'p-4', 'text-center');
+            // Get one forecast per day
+            const dailyForecasts = data.list.filter(reading => 
+                reading.dt_txt.includes('12:00:00')
+            ).slice(0, 5);
 
-        const forecastDate = document.createElement('div');
-        forecastDate.classList.add('text-gray-500', 'mb-2');
-        forecastDate.textContent = new Date(data.list[i * 8].dt_txt).toLocaleDateString();
-
-        const forecastIcon = document.createElement('div');
-        forecastIcon.classList.add('w-12', 'h-12', 'mx-auto', 'mb-2');
-        forecastIcon.innerHTML = `<img src="http://openweathermap.org/img/w/${data.list[i * 8].weather[0].icon}.png" alt="${data.list[i * 8].weather[0].description}">`;
-
-        const forecastTemp = document.createElement('div');
-        forecastTemp.classList.add('text-2xl', 'font-bold');
-        forecastTemp.textContent = `${data.list[i * 8].main.temp}°C`;
-
-        forecastItem.appendChild(forecastDate);
-        forecastItem.appendChild(forecastIcon);
-        forecastItem.appendChild(forecastTemp);
-        forecastInfo.appendChild(forecastItem);
-      }
-    } else {
-      throw new Error(`Error fetching forecast data: ${data.message}`);
+            dailyForecasts.forEach(forecast => {
+                const date = new Date(forecast.dt_txt);
+                const forecastCard = document.createElement('div');
+                forecastCard.className = 'bg-gray-50 rounded-lg p-4 text-center';
+                forecastCard.innerHTML = `
+                    <div class="text-gray-500 text-sm">${date.toLocaleDateString('en-US', { weekday: 'short' })}</div>
+                    <img src="http://openweathermap.org/img/w/${forecast.weather[0].icon}.png" 
+                         alt="${forecast.weather[0].description}"
+                         class="w-12 h-12 mx-auto my-2">
+                    <div class="text-2xl font-bold">${Math.round(forecast.main.temp)}°C</div>
+                    <div class="text-sm text-gray-500">${forecast.weather[0].description}</div>
+                    <div class="text-sm mt-2">
+                        <span class="text-blue-500">
+                            <i class="fas fa-tint"></i> ${forecast.main.humidity}%
+                        </span>
+                    </div>
+                `;
+                forecastInfo.appendChild(forecastCard);
+            });
+        } else {
+            throw new Error(data.message);
+        }
+    } catch (error) {
+        throw new Error(`Failed to fetch forecast data: ${error.message}`);
     }
-  } catch (error) {
-    console.error(error);
-    alert('Error fetching forecast data. Please try again later.');
-  }
 }
 
-// Function to handle search button click
-searchBtn.addEventListener('click', async () => {
-  const city = cityInput.value.trim();
-  if (city) {
-    try {
-      const weatherData = await getWeatherData(city);
-      displayCurrentWeather(weatherData);
-      await displayForecast(city);
-      addToSearchHistory(city);
-    } catch (error) {
-      console.error(error);
-      alert(`Error: ${error.message}`);
+// Function to add to search history
+function addToSearchHistory(city) {
+    const existingCities = Array.from(searchHistory.children)
+        .map(item => item.querySelector('span').textContent);
+    
+    if (!existingCities.includes(city)) {
+        const historyItem = document.createElement('div');
+        historyItem.className = 'flex items-center justify-between bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition duration-200';
+        historyItem.innerHTML = `
+            <span class="text-gray-700">${city}</span>
+            <button class="text-blue-500 hover:text-blue-600">
+                <i class="fas fa-search"></i>
+            </button>
+        `;
+        
+        historyItem.querySelector('button').addEventListener('click', async () => {
+            try {
+                const weatherData = await getWeatherData(city);
+                displayCurrentWeather(weatherData);
+                await displayForecast(city);
+            } catch (error) {
+                alert(error.message);
+            }
+        });
+
+        searchHistory.insertBefore(historyItem, searchHistory.firstChild);
+        
+        // Keep only last 5 searches
+        if (searchHistory.children.length > 5) {
+            searchHistory.removeChild(searchHistory.lastChild);
+        }
     }
-  }
+}
+
+// Search button click handler
+searchBtn.addEventListener('click', async () => {
+    const city = cityInput.value.trim();
+    if (city) {
+        try {
+            const weatherData = await getWeatherData(city);
+            displayCurrentWeather(weatherData);
+            await displayForecast(city);
+            addToSearchHistory(city);
+            cityInput.value = '';
+        } catch (error) {
+            alert(error.message);
+        }
+    }
 });
 
-// Function to add city to search history
-function addToSearchHistory(city) {
-  const historyItem = document.createElement('div');
-  historyItem.classList.add('bg-white', 'shadow-md', 'rounded-lg', 'p-2', 'flex', 'items-center', 'justify-between');
-
-  const cityName = document.createElement('div');
-  cityName.textContent = city;
-
-  const historyBtn = document.createElement('button');
-  historyBtn.classList.add('bg-blue-500', 'text-white', 'px-2', 'py-1', 'rounded-md', 'hover:bg-blue-600', 'focus:outline-none', 'focus:ring-2', 'focus:ring-blue-500', 'focus:ring-offset-2');
-  historyBtn.textContent = 'View';
-  historyBtn.addEventListener('click', async () => {
-    const weatherData = await getWeatherData(city);
-    if (weatherData) {
-      displayCurrentWeather(weatherData);
-      displayForecast(city);
+// Enter key handler
+cityInput.addEventListener('keypress', async (e) => {
+    if (e.key === 'Enter') {
+        searchBtn.click();
     }
-  });
-
-  historyItem.appendChild(cityName);
-  historyItem.appendChild(historyBtn);
-  searchHistory.appendChild(historyItem);
-}
+});
